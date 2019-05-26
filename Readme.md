@@ -23,4 +23,10 @@ Go to https://nosecretsstorage.blob.core.windows.net/secrets/MyPassword.txt with
 Go to http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://vault.azure.net/ with header metadata set to true
 Go to https://nosecrets-myvault01.vault.azure.net/secrets/mysecret?api-version=2016-10-01 with the Access Token as bearer 
 
+## Use Secrets in Configuration
+Add user secrets to the project. See https://docs.microsoft.com/de-de/aspnet/core/security/app-secrets?view=aspnetcore-2.2&tabs=windows
+
+Inspect %APPDATA%\Microsoft\UserSecrets\<user_secrets_id>\secrets.json
+Add key vault extension zo project. See https://docs.microsoft.com/de-de/aspnet/core/security/key-vault-configuration?view=aspnetcore-2.2
+
 
