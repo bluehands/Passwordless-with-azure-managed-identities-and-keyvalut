@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Net.Http;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.KeyVault;
+using Microsoft.Azure.ServiceBus;
+using Microsoft.Azure.ServiceBus.Primitives;
 using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Azure.Storage.Auth;
 using Microsoft.Azure.Storage.Blob;
@@ -22,7 +21,7 @@ namespace NoSecrets.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<string>> Get()
         {
-            return new string[] { "file", "keyvault" };
+            return new[] { "file", "keyvault", "servicebus" };
         }
 
         // GET api/values/5
@@ -36,23 +35,36 @@ namespace NoSecrets.Controllers
                     return await ReadSecretFromFile();
                 case "keyvault":
                     return await ReadSecretFromKeyVault();
+                case "servicebus":
+                    return await SendSecretToServiceBus();
                 default:
                     return "Unknown switch";
             }
 
         }
 
+        private async Task<string> SendSecretToServiceBus()
+        {
+            var tokenProvider = TokenProvider.CreateManagedServiceIdentityTokenProvider();
+            string sbName = "nosecrets";
+            string queueName = "myqueue";
+            QueueClient client = new QueueClient($"sb://{sbName}.servicebus.windows.net/", queueName, tokenProvider);
+            await client.SendAsync(new Message(Encoding.UTF8.GetBytes("Don't do this at home")));
+            await client.CloseAsync();
+            return "Message send to Service Bus. Check with ServiceBusExplorer";
+        }
+
         private async Task<string> ReadSecretFromKeyVault()
         {
-            var x = Environment.GetEnvironmentVariable("AzureServicesAuthConnectionString");
+            // ReSharper disable once UnusedVariable
+            var connectionStringInternalUsedByAzureServiceTokenProvider = Environment.GetEnvironmentVariable("AzureServicesAuthConnectionString");
 
-           AzureServiceTokenProvider azureServiceTokenProvider = new AzureServiceTokenProvider();
-
-            var keyVaultClient = new  KeyVaultClient(new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));
-
-            var secret = await keyVaultClient.GetSecretAsync("https://nosecrets-myvault01.vault.azure.net/secrets/mysecret").ConfigureAwait(false);
-
-            return secret.Value;
+            AzureServiceTokenProvider azureServiceTokenProvider = new AzureServiceTokenProvider();
+            var keyVaultClient = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));
+            string vaultName = "NoSecrets-MyVault01";
+            string secret = "MySecret";
+            var secretBundle = await keyVaultClient.GetSecretAsync($"https://{vaultName}.vault.azure.net/secrets/{secret}").ConfigureAwait(false);
+            return secretBundle.Value;
         }
 
         private async Task<string> ReadSecretFromFile()
