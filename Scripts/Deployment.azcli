@@ -1,0 +1,96 @@
+# subscriptionId=""
+resourceGroup="NoSecrets"
+
+az login
+# az account set --subscription $subscriptionId
+
+###### Create a resource group to collect them all
+az group create --location westeurope --name $resourceGroup
+
+###### Create a storage account and put a file
+storageAccount="nosecretsstorage01"
+az storage account create --name $storageAccount --resource-group $resourceGroup --kind StorageV2 --sku Standard_LRS --location westeurope 
+storageAccountKey="$(az storage account keys list --account-name $storageAccount -o json --query [0].value)"
+
+az storage container create --name secrets --account-name $storageAccount --account-key $storageAccountKey
+az storage blob upload --file ./MyBlobContent.txt --container-name secrets --name MyBlobContent.txt --account-name $storageAccount --account-key $storageAccountKey
+
+###### Create a service bus queue
+sbName="nosecrets01"
+az servicebus namespace create --name $sbName --resource-group $resourceGroup --location westeurope --sku basic
+az servicebus queue create --resource-group $resourceGroup --namespace-name $sbName --name myqueue
+az servicebus queue create --resource-group $resourceGroup --namespace-name $sbName --name myqueue2
+az servicebus queue create --resource-group $resourceGroup --namespace-name $sbName --name myqueue3
+
+
+###### Create a managed identity for a VM and a Web App to access the file and service bus
+# deploy a Visual Studio VM from the portal 'VS2019' 
+vmName="VS2019"
+az vm identity assign --resource-group $resourceGroup --name $vmName 
+servicePrincipalIdVM=$(az resource list --name $vmName --query [*].identity.principalId --out tsv)
+az role assignment create --assignee $servicePrincipalIdVM --role 'Storage Blob Data Contributor' --scope /subscriptions/$subscriptionId/resourceGroups/$resourceGroup/providers/Microsoft.Storage/storageAccounts/$storageAccount
+az role assignment create --assignee $servicePrincipalIdVM --role 'Contributor' --scope /subscriptions/$subscriptionId/resourceGroups/$resourceGroup/providers/Microsoft.ServiceBus/namespaces/$sbName
+
+# deploy a Web App from the portal 'ReadSecretsFromApp'
+webAppName="ReadSecretsFromApp"
+az webapp identity assign --resource-group $resourceGroup --name $webAppName 
+servicePrincipalIdApp=$(az resource list --name $webAppName --query [*].identity.principalId --out tsv)
+az role assignment create --assignee $servicePrincipalIdApp --role 'Storage Blob Data Contributor' --scope /subscriptions/$subscriptionId/resourceGroups/$resourceGroup/providers/Microsoft.Storage/storageAccounts/$storageAccount
+az role assignment create --assignee $servicePrincipalIdApp --role 'Contributor' --scope /subscriptions/$subscriptionId/resourceGroups/$resourceGroup/providers/Microsoft.ServiceBus/namespaces/$sbName
+
+
+###### Create a key vault to store secrets for resources without rbac 
+vaultName="NoSecrets-Vault01"
+az keyvault create --location westeurope --name $vaultName --resource-group $resourceGroup --sku premium
+az keyvault secret set --name MySecret --value "Don't do this at home" --vault-name $vaultName 
+
+az keyvault set-policy --name $vaultName --object-id $servicePrincipalIdVM --resource-group $resourceGroup --secret-permissions get list
+az keyvault set-policy --name $vaultName --object-id $servicePrincipalIdApp --resource-group $resourceGroup --secret-permissions get list
+
+###### Create a key vault to store secrets for configuration (appsettings.json)
+# deploy a Web App from the portal 'SecureConfigurationWithKeyVaultWebApp'
+webAppNameBindToConfig="SecureConfigurationWithKeyVaultWebApp"
+az webapp identity assign --resource-group $resourceGroup --name $webAppNameBindToConfig 
+servicePrincipalIdBindToConfigApp=$(az resource list --name $webAppNameBindToConfig --query [*].identity.principalId --out tsv)
+
+vaultNameBindToConfig="NoSecrets-Vault02"
+az keyvault create --location westeurope --name $vaultNameBindToConfig --resource-group $resourceGroup --sku premium
+az keyvault secret set --name StorageConnectionString --value "Don't do this at home" --vault-name $vaultNameBindToConfig 
+
+az keyvault set-policy --name $vaultNameBindToConfig --object-id $servicePrincipalIdBindToConfigApp --resource-group $resourceGroup --secret-permissions get list
+
+###### Create a key vault to store secrets for azure functions
+# deploy a Function from the portal 'BindFunctionToKeyVault'
+functionNameBindToKeyVault="BindFunctionToKeyVault"
+az webapp identity assign --resource-group $resourceGroup --name $functionNameBindToKeyVault 
+servicePrincipalIdBindFunctionToKeyVault=$(az resource list --name $functionNameBindToKeyVault --query [*].identity.principalId --out tsv)
+
+vaultNameBindFunctionToKeyVault="NoSecrets-Vault03"
+az keyvault create --location westeurope --name $vaultNameBindFunctionToKeyVault --resource-group $resourceGroup --sku premium
+serviceBusConnection=$(az servicebus namespace authorization-rule keys list --namespace-name $sbName --resource-group $resourceGroup --name "RootManageSharedAccessKey" --query primaryConnectionString --out tsv)
+az keyvault secret set --name ServiceBusConnection --value $serviceBusConnection --vault-name $vaultNameBindFunctionToKeyVault 
+
+az keyvault set-policy --name $vaultNameBindFunctionToKeyVault --object-id $servicePrincipalIdBindFunctionToKeyVault --resource-group $resourceGroup --secret-permissions get list
+
+
+###### Create a key vault to store secrets for azure functions with extension
+# deploy a Function from the portal 'BindFunctionToKeyVaultWithExtension'
+functionNameBindToKeyVaultWitheExtension="BindFunctionToKeyVaultWithExtension"
+az webapp identity assign --resource-group $resourceGroup --name $functionNameBindToKeyVaultWitheExtension 
+servicePrincipalIdBindFunctionToKeyVaultWithExtension=$(az resource list --name $functionNameBindToKeyVaultWitheExtension --query [*].identity.principalId --out tsv)
+
+vaultNameBindFunctionToKeyVaultWithExtension="NoSecrets-Vault04"
+az keyvault create --location westeurope --name $vaultNameBindFunctionToKeyVaultWithExtension --resource-group $resourceGroup --sku premium
+serviceBusConnection=$(az servicebus namespace authorization-rule keys list --namespace-name $sbName --resource-group $resourceGroup --name "RootManageSharedAccessKey" --query primaryConnectionString --out tsv)
+az keyvault secret set --name ServiceBusConnection --value $serviceBusConnection --vault-name $vaultNameBindFunctionToKeyVaultWithExtension 
+
+az keyvault set-policy --name $vaultNameBindFunctionToKeyVaultWithExtension --object-id $servicePrincipalIdBindFunctionToKeyVaultWithExtension --resource-group $resourceGroup --secret-permissions get list
+
+###### Create a service principal  
+servicePrincipalIdUserDefined=$(az ad sp create-for-rbac --name NoSecretsService01 --query appId --out tsv)
+servicePrincipalTenentId=$(az ad sp create-for-rbac --name NoSecretsService01 --query tenant --out tsv)
+servicePrincipalPassword=$(az ad sp create-for-rbac --name NoSecretsService01 --query password --out tsv)
+
+###### Create a key vault to store certificates for crypto
+vaultNameCrypto="NoSecrets-Vault05"
+az keyvault create --location westeurope --name $vaultNameCrypto --resource-group $resourceGroup --sku premium

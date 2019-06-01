@@ -21,7 +21,7 @@ namespace Secure_configuration_with_key_vault.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<string>> Get()
         {
-            var secretKey = "MySecretConnectionString";
+            var secretKey = "StorageConnectionString";
             var secretValue = Configuration.GetValue<string>(secretKey);
 
             var publicSettingKey = "MyPublicSetting";

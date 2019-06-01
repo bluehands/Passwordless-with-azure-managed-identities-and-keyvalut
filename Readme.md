@@ -11,13 +11,13 @@ Inspect the token in http://jwt.ms
 ## Azure Services and Azure Resources support MI
 See https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/services-support-managed-identities to get a list of Services and Ressources which supports MI & RBAC
 
-### Use Azure CLI to set key vault policy for VM Principal
-az vm identity show --name vs1019 --resource-group nosecrets
-az keyvault set-policy --name NoSecrets-MyVault01 --object-id ed9d105a-fe50-4128-8547-120627d00919 --secret-permissions get list
-
 ### Use Postman to get an Access Token in a VM
 Go to http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://storage.azure.com/ with header metadata set to true
-Go to https://nosecretsstorage.blob.core.windows.net/secrets/MyPassword.txt with the Access Token as bearer and header x-ms-version set to 2018-11-09
+Go to https://nosecretsstorage01.blob.core.windows.net/secrets/MyBlobContent.txt with the Access Token as bearer and header x-ms-version set to 2018-11-09
+
+### Use Azure CLI to set key vault policy for VM Principal
+az vm identity show --name vs2019 --resource-group nosecrets
+az keyvault set-policy --name NoSecrets-MyVault01 --object-id ed9d105a-fe50-4128-8547-120627d00919 --secret-permissions get list
 
 Go to http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://vault.azure.net/ with header metadata set to true
 Go to https://nosecrets-myvault01.vault.azure.net/secrets/mysecret?api-version=2016-10-01 with the Access Token as bearer 
@@ -26,16 +26,31 @@ Go to https://nosecrets-myvault01.vault.azure.net/secrets/mysecret?api-version=2
 Add user secrets to the project. See https://docs.microsoft.com/de-de/aspnet/core/security/app-secrets?view=aspnetcore-2.2&tabs=windows
 
 Inspect %APPDATA%\Microsoft\UserSecrets\<user_secrets_id>\secrets.json
-Add key vault extension zo project. See https://docs.microsoft.com/de-de/aspnet/core/security/key-vault-configuration?view=aspnetcore-2.2
+Add key vault extension to project. See https://docs.microsoft.com/de-de/aspnet/core/security/key-vault-configuration?view=aspnetcore-2.2
 
 ## Bind Azure Function to Key Vault
+### Use special syntax for key vault setting
 Deploy the Function as usual. Update the Config with the special syntax for key vault setting. See https://docs.microsoft.com/en-us/azure/app-service/app-service-key-vault-references#reference-syntax
 
-Connection to SB: ServiceBusConnection = @Microsoft.KeyVault(SecretUri=https://nosecrets-myvault03.vault.azure.net/secrets/ServiceBusConnection/10595e05c7dd43ada28bf1d0bb9e948c)
+Connection to SB: ServiceBusConnection = @Microsoft.KeyVault(SecretUri=https://nosecrets-vault03.vault.azure.net/secrets/ServiceBusConnection/f647aa1d6f6e4de99260cb9a6e98f390)
 
-## Use Key Vault to store SSL Certificates
+### Use key vault extension
+Replace the default IConfiguration with the key vault configuration. See https://blog.wille-zone.de/post/azure-keyvault-for-azure-functions/
+
+AzureKeyVault_Uri = https://nosecrets-vault04.vault.azure.net/
 
 ## Use Service Principal for not supported Services
+Create a Service Principal az ad sp create-for-rbac --name NoSecretsService01
+Remember AppId and PWD
 
-## Use Key Vault for cryptographic operations 
+### Use Key Vault to store SSL Certificates
+Add a certificate to key vault
+Import certificate in to app service
+Add binding to certificate 
+
+### Use Key Vault for cryptographic operations 
+Create certificates for signng and encryption
+Get KeyIndentifier & SecretIdentifier
+
+Add a implementaion for RSA with Key Vault to the project. See https://github.com/onovotny/RSAKeyVaultProvider
 

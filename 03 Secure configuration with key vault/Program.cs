@@ -28,7 +28,7 @@ namespace Secure_configuration_with_key_vault
                         {
                             var azureServiceTokenProvider = new AzureServiceTokenProvider();
                             var keyVaultClient = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));
-                            config.AddAzureKeyVault("https://NoSecrets-MyVault02.vault.azure.net/", keyVaultClient, new DefaultKeyVaultSecretManager());
+                            config.AddAzureKeyVault($"https://NoSecrets-Vault02.vault.azure.net/", keyVaultClient, new DefaultKeyVaultSecretManager());
                         }
                     })
                 .UseStartup<Startup>();

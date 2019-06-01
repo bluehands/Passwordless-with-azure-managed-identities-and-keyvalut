@@ -42,31 +42,7 @@ namespace NoSecrets.Controllers
             }
 
         }
-
-        private async Task<string> SendSecretToServiceBus()
-        {
-            var tokenProvider = TokenProvider.CreateManagedServiceIdentityTokenProvider();
-            string sbName = "nosecrets";
-            string queueName = "myqueue";
-            QueueClient client = new QueueClient($"sb://{sbName}.servicebus.windows.net/", queueName, tokenProvider);
-            await client.SendAsync(new Message(Encoding.UTF8.GetBytes("Don't do this at home")));
-            await client.CloseAsync();
-            return "Message send to Service Bus. Check with ServiceBusExplorer";
-        }
-
-        private async Task<string> ReadSecretFromKeyVault()
-        {
-            // ReSharper disable once UnusedVariable
-            var connectionStringInternalUsedByAzureServiceTokenProvider = Environment.GetEnvironmentVariable("AzureServicesAuthConnectionString");
-
-            AzureServiceTokenProvider azureServiceTokenProvider = new AzureServiceTokenProvider();
-            var keyVaultClient = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));
-            string vaultName = "NoSecrets-MyVault01";
-            string secret = "MySecret";
-            var secretBundle = await keyVaultClient.GetSecretAsync($"https://{vaultName}.vault.azure.net/secrets/{secret}").ConfigureAwait(false);
-            return secretBundle.Value;
-        }
-
+        
         private async Task<string> ReadSecretFromFile()
         {
             var provider = new AzureServiceTokenProvider();
@@ -74,9 +50,9 @@ namespace NoSecrets.Controllers
             TokenCredential tokenCredential = new TokenCredential(accessToken);
             StorageCredentials storageCredentials = new StorageCredentials(tokenCredential);
 
-            var storageAccountName = "nosecretsstorage";
+            var storageAccountName = "nosecretsstorage01";
             var containerName = "secrets";
-            var fileName = "MyPassword.txt";
+            var fileName = "MyBlobContent.txt";
 
             var blob = new CloudBlockBlob(new Uri($"https://{storageAccountName}.blob.core.windows.net/{containerName}/{fileName}"), storageCredentials);
             using (var s = await blob.OpenReadAsync())
@@ -88,6 +64,27 @@ namespace NoSecrets.Controllers
                 }
             }
         }
+        private async Task<string> ReadSecretFromKeyVault()
+        {
+            // ReSharper disable once UnusedVariable
+            var connectionStringInternalUsedByAzureServiceTokenProvider = Environment.GetEnvironmentVariable("AzureServicesAuthConnectionString");
 
+            AzureServiceTokenProvider azureServiceTokenProvider = new AzureServiceTokenProvider();
+            var keyVaultClient = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));
+            string vaultName = "NoSecrets-Vault01";
+            string secret = "MySecret";
+            var secretBundle = await keyVaultClient.GetSecretAsync($"https://{vaultName}.vault.azure.net/secrets/{secret}").ConfigureAwait(false);
+            return secretBundle.Value;
+        }
+        private async Task<string> SendSecretToServiceBus()
+        {
+            var tokenProvider = TokenProvider.CreateManagedServiceIdentityTokenProvider();
+            string sbName = "nosecrets01";
+            string queueName = "myqueue";
+            QueueClient client = new QueueClient($"sb://{sbName}.servicebus.windows.net/", queueName, tokenProvider);
+            await client.SendAsync(new Message(Encoding.UTF8.GetBytes("Don't do this at home")));
+            await client.CloseAsync();
+            return "Message send to Service Bus. Check with ServiceBusExplorer";
+        }
     }
 }
