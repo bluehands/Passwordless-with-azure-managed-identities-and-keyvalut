@@ -1,0 +1,254 @@
+{
+	"info": {
+		"_postman_id": "cc97e0fc-0418-6fd8-1f7c-cb9ff4ac4d82",
+		"name": "Talks",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "No Secrets",
+			"item": [
+				{
+					"name": "Call Metadata Instance Service",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "metadata",
+								"value": "true",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://169.254.169.254/metadata/instance?api-version=2017-08-01",
+							"protocol": "http",
+							"host": [
+								"169",
+								"254",
+								"169",
+								"254"
+							],
+							"path": [
+								"metadata",
+								"instance"
+							],
+							"query": [
+								{
+									"key": "api-version",
+									"value": "2017-08-01"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Access Token (Storage)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "metadata",
+								"value": "true",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://storage.azure.com/",
+							"protocol": "http",
+							"host": [
+								"169",
+								"254",
+								"169",
+								"254"
+							],
+							"path": [
+								"metadata",
+								"identity",
+								"oauth2",
+								"token"
+							],
+							"query": [
+								{
+									"key": "api-version",
+									"value": "2018-02-01"
+								},
+								{
+									"key": "resource",
+									"value": "https://storage.azure.com/"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Access Token (Vault)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "metadata",
+								"value": "true",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://vault.azure.net",
+							"protocol": "http",
+							"host": [
+								"169",
+								"254",
+								"169",
+								"254"
+							],
+							"path": [
+								"metadata",
+								"identity",
+								"oauth2",
+								"token"
+							],
+							"query": [
+								{
+									"key": "api-version",
+									"value": "2018-02-01"
+								},
+								{
+									"key": "resource",
+									"value": "https://vault.azure.net"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Read from Storage",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-ms-version",
+								"value": "2018-11-09",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://nosecretsstorage01.blob.core.windows.net/secrets/MyBlobContent.txt",
+							"protocol": "https",
+							"host": [
+								"nosecretsstorage01",
+								"blob",
+								"core",
+								"windows",
+								"net"
+							],
+							"path": [
+								"secrets",
+								"MyBlobContent.txt"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Read from Vault",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://NoSecrets-Vault01.vault.azure.net/secrets/MySecret?api-version=2016-10-01",
+							"protocol": "https",
+							"host": [
+								"NoSecrets-Vault01",
+								"vault",
+								"azure",
+								"net"
+							],
+							"path": [
+								"secrets",
+								"MySecret"
+							],
+							"query": [
+								{
+									"key": "api-version",
+									"value": "2016-10-01"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Call Web Api (localhost)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:44356/api/values/file",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "44356",
+							"path": [
+								"api",
+								"values",
+								"file"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Call Web Api",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://readsecretsfromapp.azurewebsites.net/api/values/file",
+							"protocol": "https",
+							"host": [
+								"readsecretsfromapp",
+								"azurewebsites",
+								"net"
+							],
+							"path": [
+								"api",
+								"values",
+								"file"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

@@ -15,7 +15,6 @@ namespace Bind_to_key_vault_with_extension
             var tempProvider = builder.Services.BuildServiceProvider();
             var config = tempProvider.GetRequiredService<IConfiguration>();
             builder.AddAzureKeyVault(config["AzureKeyVault_Uri"]);
-            //builder.AddAzureKeyVault(config["AzureKeyVault_Uri"], config["AzureKeyVault_ClientId"], config["AzureKeyVault_ClientSecret"]);
         }
     }
 }

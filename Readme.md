@@ -1,36 +1,52 @@
 # Some instructions to start with Passwordless and Azure KeyVault
 
-## Use Azure CLI to logon and get an Access Token
-az login
-az account set --subscription [subscription-id]
-az account list
-az account get-access-token --resource https://storage.azure.com/
+## Use Azure AD Connect to sync your AD with Azure
 
-Inspect the token in http://jwt.ms
+## Set your Microsoft Account to passwordless
+
+## Use Azure CLI to logon and get an Access Token
+* az login
+* az account set --subscription [subscription-id]
+* az account list
+* az account get-access-token --resource https://storage.azure.com/
+* Inspect the token in http://jwt.ms
 
 ## Azure Services and Azure Resources support MI
-See https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/services-support-managed-identities to get a list of Services and Ressources which supports MI & RBAC
+* See https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/services-support-managed-identities to get a list of Services and Ressources which supports MI & RBAC
 
 ### Use Postman to get an Access Token in a VM
-Go to http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://storage.azure.com/ with header metadata set to true
+* Go to Portal and enable Identity on the VM
+* Go to http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://storage.azure.com/ with header metadata set to true
+* Inspect the token in http://jwt.ms
 
-Go to https://nosecretsstorage01.blob.core.windows.net/secrets/MyBlobContent.txt with the Access Token as bearer and header x-ms-version set to 2018-11-09
+#### Set RBAC on Storage Account to get access from VM
+* Go to https://nosecretsstorage01.blob.core.windows.net/secrets/MyBlobContent.txt with the Access Token as bearer and header x-ms-version set to 2018-11-09
+
+### Demo "01 Read from blob with managed identity" inside the VM
+* Inspect the access token
 
 ### Use Azure CLI to set key vault policy for VM Principal
-az vm identity show --name vs2019 --resource-group nosecrets
+* az vm identity show --name vs2019 --resource-group nosecrets
+* az keyvault set-policy --name NoSecrets-MyVault01 --object-id ed9d105a-fe50-4128-8547-120627d00919 --secret-permissions get list
 
-az keyvault set-policy --name NoSecrets-MyVault01 --object-id ed9d105a-fe50-4128-8547-120627d00919 --secret-permissions get list
+* Go to http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://vault.azure.net/ with header metadata set to true
+* Go to https://nosecrets-myvault01.vault.azure.net/secrets/mysecret?api-version=2016-10-01 with the Access Token as bearer 
 
-Go to http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://vault.azure.net/ with header metadata set to true
+### Demo "01 Read from blob with managed identity" outside the VM
+* Inspect the access token
+* See the service authentication options in Visual Studio
 
-Go to https://nosecrets-myvault01.vault.azure.net/secrets/mysecret?api-version=2016-10-01 with the Access Token as bearer 
+## Demo "02 Read secrets from" 
+* Inspect access to key vault in code
+* Add policy to key vault
+* Inspect secrets in key vault
+* Inspect the deployed App in Azure with Postman
 
 ## Use Secrets in Configuration
-Add user secrets to the project. See https://docs.microsoft.com/de-de/aspnet/core/security/app-secrets?view=aspnetcore-2.2&tabs=windows
-
-Inspect %APPDATA%\Microsoft\UserSecrets\<user_secrets_id>\secrets.json
-
-Add key vault extension to project. See https://docs.microsoft.com/de-de/aspnet/core/security/key-vault-configuration?view=aspnetcore-2.2
+* Demo "03 Secure configuration with key vault" 
+* Add user secrets to the project. See https://docs.microsoft.com/de-de/aspnet/core/security/app-secrets?view=aspnetcore-2.2&tabs=windows
+* Inspect %APPDATA%\Microsoft\UserSecrets\<user_secrets_id>\secrets.json
+* Add key vault extension to project. See https://docs.microsoft.com/de-de/aspnet/core/security/key-vault-configuration?view=aspnetcore-2.2
 
 ## Bind Azure Function to Key Vault
 ### Use special syntax for key vault setting
