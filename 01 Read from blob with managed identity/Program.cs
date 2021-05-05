@@ -14,8 +14,8 @@ namespace Read_from_blob_with_managed_identity
         {
             var provider = new AzureServiceTokenProvider();
             var accessToken = await provider.GetAccessTokenAsync("https://storage.azure.com/").ConfigureAwait(false);
-            TokenCredential tokenCredential = new TokenCredential(accessToken);
-            StorageCredentials storageCredentials = new StorageCredentials(tokenCredential);
+            var tokenCredential = new TokenCredential(accessToken);
+            var storageCredentials = new StorageCredentials(tokenCredential);
 
             var storageAccountName = "nosecretsstorage01";
             var containerName = "secrets";

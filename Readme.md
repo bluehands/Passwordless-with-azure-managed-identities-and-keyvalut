@@ -9,6 +9,7 @@
 * az account set --subscription [subscription-id]
 * az account list
 * az account get-access-token --resource https://storage.azure.com/
+* az account get-access-token --resource https://vault.azure.net/
 * Inspect the token in http://jwt.ms
 
 ## Azure Services and Azure Resources support MI
