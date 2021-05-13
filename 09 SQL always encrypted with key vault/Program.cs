@@ -1,12 +1,11 @@
-﻿using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using Microsoft.SqlServer.Management.AlwaysEncrypted.AzureKeyVaultProvider;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Services.AppAuthentication;
+using Microsoft.SqlServer.Management.AlwaysEncrypted.AzureKeyVaultProvider;
 
 #pragma warning disable 618
 
