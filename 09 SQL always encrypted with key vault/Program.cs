@@ -21,7 +21,7 @@ namespace _09_SQL_always_encrypted_with_key_vault
             var keyVaultClient = GetKeyVaultClient(azureServiceTokenProvider);
             InitializeAzureKeyVaultProvider(azureServiceTokenProvider);
 
-            var secret = await keyVaultClient.GetSecretAsync($"https://nosecrets-vault06.vault.azure.net/secrets/ConnectionString/");
+            var secret = await keyVaultClient.GetSecretAsync($"https://nosecrets-vault02.vault.azure.net/secrets/DBConnectionString/");
             connectionString = secret.Value;
             var connStringBuilder = new SqlConnectionStringBuilder(connectionString)
             {
@@ -32,12 +32,13 @@ namespace _09_SQL_always_encrypted_with_key_vault
 
             ResetPersonsTable();
             InsertData();
-
+            Console.WriteLine("-------- Select all -------------");
             foreach (var person in SelectAllPersons())
             {
                 Console.WriteLine($"{person.Name} CreditCard: {person.CreditCard} Amount {person.Amount}");
             }
 
+            Console.WriteLine("-------- Query by CreditCard -------------");
             var creditCardHolger = "999-99-0005";
             var selectedPerson = SelectPersonByCreditCard(creditCardHolger);
 

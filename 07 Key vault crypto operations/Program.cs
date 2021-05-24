@@ -13,8 +13,8 @@ namespace _07_Key_vault_crypto_operation_sign
     {
         static async Task Main(string[] args)
         {
-            var keyIdentifier = new KeyIdentifier("https://nosecrets-vault05.vault.azure.net:443/keys/SigningCertificate01/2c86727652f14814b77018601a2e5ed4");
-            var secretIdentifier = new SecretIdentifier("https://nosecrets-vault05.vault.azure.net:443/secrets/SigningCertificate01/2c86727652f14814b77018601a2e5ed4");
+            var keyIdentifier = new KeyIdentifier("https://nosecrets-vault02.vault.azure.net/keys/Document-Signing01/797aef42588b4a7a8638edc7de08b400");
+            var secretIdentifier = new SecretIdentifier("https://nosecrets-vault02.vault.azure.net/secrets/Document-Signing01/797aef42588b4a7a8638edc7de08b400");
 
             var azureServiceTokenProvider = new AzureServiceTokenProvider();
             var keyVaultClient = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));

@@ -42,7 +42,7 @@ namespace NoSecrets.Controllers
             }
 
         }
-        
+
         private async Task<string> ReadSecretFromFile()
         {
             var provider = new AzureServiceTokenProvider();
@@ -66,9 +66,6 @@ namespace NoSecrets.Controllers
         }
         private async Task<string> ReadSecretFromKeyVault()
         {
-            // ReSharper disable once UnusedVariable
-            var connectionStringInternalUsedByAzureServiceTokenProvider = Environment.GetEnvironmentVariable("AzureServicesAuthConnectionString");
-
             AzureServiceTokenProvider azureServiceTokenProvider = new AzureServiceTokenProvider();
             var keyVaultClient = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));
             string vaultName = "NoSecrets-Vault01";

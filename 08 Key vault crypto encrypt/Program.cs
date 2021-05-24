@@ -24,6 +24,8 @@ namespace _08_Key_vault_crypto_operiation_encrypt
 
             var plainText = "Hello World";
             var encryptedData = Encrypt(rsa, plainText);
+            Console.WriteLine("-------------encrypted string------------");
+            Console.WriteLine(Convert.ToBase64String(encryptedData));
             var decryptedData = Decrypt(rsa, encryptedData);
             Console.WriteLine("-------------decrypted string------------");
             Console.WriteLine(decryptedData);
@@ -41,6 +43,6 @@ namespace _08_Key_vault_crypto_operiation_encrypt
             var decryptedData = rsa.Decrypt(data, RSAEncryptionPadding.OaepSHA256);
             return Encoding.UTF8.GetString(decryptedData);
         }
-       
+
     }
 }
